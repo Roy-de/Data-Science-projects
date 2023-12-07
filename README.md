@@ -1,4 +1,4 @@
-# Zindua_Projects
+# Data Science Projects
 
 Hello There,
 My name is Roy Murithi and i am proud to be a sutudent of Zindua coding school.
