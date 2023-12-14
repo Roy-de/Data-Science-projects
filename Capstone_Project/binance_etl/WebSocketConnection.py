@@ -25,9 +25,6 @@ class WebSocketConnection:
             high_price = float(data['h'])
             low_price = float(data['l'])
             close_price = float(data['c'])
-            print(type(eventtime), "\t", eventtime, "\t",
-                  round(float(data['h']), 2), "\t", round(float(data['l']), 2), "\t",
-                  round(float(data['c']), 2))
             try:
                 print("Inserting data")
                 query = f"INSERT INTO btcusd.btcusd_time_series (timestamp, open_price, high_price, low_price, close_price) VALUES ({eventtime}, {open_price}, {high_price}, {low_price}, {close_price})"
