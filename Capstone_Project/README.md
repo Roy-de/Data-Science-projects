@@ -41,6 +41,20 @@ accurate and timely information, facilitating better decision-
 making in the dynamic and volatile world of cryptocurrency
 markets.
 
+### IMPLEMENTATION
+##### Airflow architecture
+![Alt text](<Screenshot from 2023-12-14 19-10-04.png>)
+
+The architecture consists of 5 tasks
+The first task is supposed to establish connection to cassandra database on the datastax platform
+The second task is supposed to fetch the data and transform the close price to returns 
+The task named load to db task is supposed to load the returns to cassandra database
+The other task is supposed to train the model every minute
+The final task is supposed create the returns table
+
+##### Websocket
+The websocket which is supposed to run forever in responsible for getting the data and loading it to the cassandra database
+
 ### CONCLUSION
 
 In conclusion, the proposed projectaddresses the critical need for accurate and timely Bitcoin price data in the
