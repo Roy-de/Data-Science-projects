@@ -4,6 +4,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from binance_etl import Cassandra as cs
 import pandas as pd
+from statsmodels.tsa.arima.model import ARIMA
 
 default_args = {
     'owner': 'roy',
@@ -80,8 +81,16 @@ def load_to_db(**kwargs):
         returns = row['return']
 
         # Use a raw SQL query to insert data into the database
-        query = f"INSERT INTO btcusd.btcusd_time_series (timestamp, returns) VALUES ('{timestamp}', {returns})"
+        query = f"INSERT INTO btcusd.returns_table (timestamp, returns) VALUES ('{timestamp}', {returns})"
         session.execute(query)
+
+
+def train_model():
+    session = cs.establish_connection()
+    query = f"SELECT * FROM btcusd.returns_table"
+    rows = session.execute(query)
+    data = pd.DataFrame(rows)
+    ARIMA(endog=data, order=(3, 1, 3))
 
 
 cs_task = PythonOperator(
@@ -108,7 +117,14 @@ create_returns_table_task = PythonOperator(
     python_callable=create_returns_table,
     dag=dag,
 )
+train_model = PythonOperator(
+    task_id='train_model',
+    python_callable=train_model,
+    provide_context=True,
+    dag=dag
+)
 
 cs_task.set_downstream(create_returns_table_task)
 cs_task.set_downstream(gt_data)
 gt_data.set_downstream(load_to_db_task)
+gt_data.set_downstream(train_model)
