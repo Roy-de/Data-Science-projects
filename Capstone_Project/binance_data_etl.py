@@ -42,16 +42,15 @@ def get_returns(**kwargs):
     session = cs.establish_connection()
     # Query to retrieve data for the last minute (timestamps in seconds)
     one_minute_ago = time() - 60
-    select_query = f"SELECT timestamp, high_price, low_price FROM btcusd.btcusd_time_series WHERE timestamp >= {one_minute_ago} ALLOW FILTERING"
+    select_query = f"SELECT timestamp, close_price FROM btcusd.btcusd_time_series WHERE timestamp >= {one_minute_ago} ALLOW FILTERING"
 
     rows = session.execute(select_query)
     data = []
     for row in rows:
-        if hasattr(row, 'timestamp') and hasattr(row, 'high_price') and hasattr(row, 'low_price'):
+        if hasattr(row, 'timestamp') and hasattr(row, 'close_price'):
             data.append({
                 'timestamp': row.timestamp,
-                'high_price': row.high_price,
-                'low_price': row.low_price
+                'close_price': row.close_price
             })
         else:
             # Handle the case where the expected columns are not present in the row
@@ -61,8 +60,7 @@ def get_returns(**kwargs):
     df = pd.DataFrame(data)
     print(df)
     # Calculate returns using a simple formula
-    df['avg_price'] = (df['high_price'] + df['low_price']) / 2
-    df['return'] = df['avg_price'].pct_change()
+    df['return'] = df['close_price'].pct_change()*100
 
     # Push the DataFrame to XCom
     kwargs['ti'].xcom_push(key='dataframe', value=df.to_json())
