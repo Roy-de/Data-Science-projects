@@ -86,11 +86,22 @@ def load_to_db(**kwargs):
 
 
 def train_model():
+    # Establish Cassandra connection
     session = cs.establish_connection()
-    query = f"SELECT * FROM btcusd.returns_table"
+
+    # Execute the query to retrieve data from the Cassandra table
+    query = "SELECT timestamp, returns FROM btcusd.returns_table"
     rows = session.execute(query)
-    data = pd.DataFrame(rows)
-    ARIMA(endog=data, order=(3, 1, 3))
+
+    # Convert the result to a DataFrame
+    data = pd.DataFrame(rows, columns=["timestamp", "returns"])
+
+    # Assuming 'timestamp' is the index
+    data.set_index('timestamp', inplace=True)
+
+    # Train the ARIMA model with your desired order
+    model = ARIMA(data['returns'], order=(3, 1, 3))
+    fitted_model = model.fit()
 
 
 cs_task = PythonOperator(
